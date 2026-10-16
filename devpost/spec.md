@@ -124,7 +124,7 @@ PRD ref: `prd.md > The Core Journey`, `prd.md > Topic Entry and Generation`, `pr
 
 ### `GeminiService`
 
-Uses `@google/genai` on the server only. Reads `GEMINI_API_KEY` and `GEMINI_MODEL` from the server environment and makes one initial Gemini call per generation request, asking for structured JSON based on the shared response schema. The currently verified SDK method is `ai.interactions.create(...)` with `response_format`; pass `store: false` so Gemini does not retain an interaction record for later turns. Recheck the method and options against the installed SDK documentation during setup. If the model output cannot be parsed or fails validation, retries generation once. Does not retry rate limits, transport failures, or timeouts automatically.
+Uses `@google/genai` on the server only. Reads `GEMINI_API_KEY` and `GEMINI_MODEL` from the server environment and starts each generation request with one Gemini call, asking for structured JSON based on the shared response schema. The currently verified SDK method is `ai.interactions.create(...)` with `response_format`; pass `store: false` so Gemini does not retain an interaction record for later turns. Recheck the method and options against the installed SDK documentation during setup. If the model output cannot be parsed or fails validation, retries generation once. Retries upstream `429` and `503` responses up to two times with one- then two-second delays; does not retry other provider errors, transport failures, or timeouts. SDK automatic retries remain disabled.
 
 PRD ref: `prd.md > Topic Entry and Generation`, `prd.md > States and Boundaries`.
 
@@ -239,9 +239,10 @@ No other external runtime service, database, or hosting provider is used.
 
 ## Important Failure Modes
 
-- **Provider rate limit** → Return `429` with `RATE_LIMITED`; show a plain-language busy message and disable retry for five seconds.
+- **Provider rate limit** → Retry `429` responses up to twice with one- then two-second delays. If still rate-limited, return `429` with `RATE_LIMITED`; show a plain-language busy message and disable retry for five seconds.
+- **Provider unavailable** → Retry `503` responses up to twice with one- then two-second delays. If still unavailable, return `GENERATION_FAILED` without provider details; retain the topic and offer **Try again**.
 - **Malformed or invalid generated response** → Retry once. If it remains invalid, return `GENERATION_FAILED`; show a friendly message and **Try again**, preserving topic and Beginner selection. Never show partial results.
-- **Network error, timeout, or unavailable provider** → Abort the Gemini request after 60 seconds and return `GENERATION_FAILED` without raw provider details; retain the topic and offer **Try again**. Log only sanitized technical context, never the key, full request body, or provider error text.
+- **Network error or timeout** → Abort the Gemini request after 60 seconds and return `GENERATION_FAILED` without raw provider details; retain the topic and offer **Try again**. Log only the sanitized HTTP status when available, never the key, full request body, or provider error text.
 - **Missing API key or model configuration with fixture disabled** → Fail server startup with an actionable local setup message; never fall back to mock or success-shaped content.
 - **Development fixture enabled in production** → Refuse to start or serve the fixture; the flag is for local development only.
 - **Unsupported topic in development fixture mode** → Return `FIXTURE_TOPIC_UNSUPPORTED` with guidance to use Neural Networks or turn off the fixture for Gemini; keep the input editable and allow retry. This fixture-only response does not change Gemini-mode behavior.
@@ -260,7 +261,7 @@ No other external runtime service, database, or hosting provider is used.
 - **Build revision — opt-in development fixture while Gemini quota is unavailable:** a fixed, validated Neural Networks response may be served only with `USE_FIXTURE=true` outside production. It enables deterministic UI and kernel verification without changing normal Gemini behavior, masking Gemini failures, or entering the browser bundle. Before final review, disable it and pass both the live smoke test and the complete real-model flow.
 - **Final-review refinement — explicit fixture topic error:** requests for topics other than Neural Networks in fixture mode return a dedicated safe code and user-facing instructions to disable the fixture for Gemini. The input stays available so changing to a supported topic and retrying succeeds; normal Gemini-mode behavior is unchanged.
 - **Learner choice — TypeScript and shared Zod contract:** one source defines the response shape and inferred types; runtime checks still explicitly enforce quiz counts, answer indexes, unique map IDs, valid edge endpoints, and question-to-node references.
-- **Learner choice — one initial model call, with one retry only for invalid model output:** handles malformed responses without retrying provider throttling or ordinary network errors.
+- **Learner choice — bounded retry behavior:** one retry for invalid model output and up to two retries for transient `429`/`503` responses; other provider and transport errors are not retried automatically.
 - **Learner choice — no deployment:** the short demo video and public repository are the submission deliverables; reviewers can follow the documented local setup.
 - **Resolved learning question:** structured JSON mode can constrain the model's output format, but it does not prove a question's `nodeId` refers to an existing map node. The server's Zod parse plus explicit cross-reference check provides that guarantee; the build should test both malformed output and a valid-looking response with a missing node ID.
 - **Implementation detail — five-second cooldown:** resolves the PRD's open cooldown detail, based on the learner's requested rate-limit behavior.

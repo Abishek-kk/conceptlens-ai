@@ -59,10 +59,7 @@ router.post("/generate", async (request, response) => {
       return;
     }
 
-    console.error("Lesson generation failed.", {
-      name: error instanceof Error ? error.name : "unknown error",
-      status,
-    });
+    console.error("Lesson generation failed.", { status: status ?? "unknown" });
     response.status(502).json({ error: { code: "GENERATION_FAILED" } });
   }
 });
