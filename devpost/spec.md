@@ -59,7 +59,8 @@ Use mutually compatible current stable dependency versions and commit the genera
 
 - **Runtime:** Local browser plus two local Node processes (Vite frontend and Express API); no deployment.
 - **Requirements:** Node.js LTS and npm; a Gemini API key from [Google AI Studio](https://aistudio.google.com/api-keys).
-- **Secret and model configuration:** Copy `server/.env.example` to `server/.env`; set `GEMINI_API_KEY` there. `server/.env` is ignored by Git. Verify the exact model ID in Google AI Studio and set it as `GEMINI_MODEL` in that file. `gemini-3.8-flash` is only a starting candidate, not a code default; the server must always read `GEMINI_MODEL` from the environment and must not hard-code a model ID. Never put credentials in `VITE_*` variables, source files, or chat.
+- **Secret and model configuration:** Copy `server/.env.example` to `server/.env`; set `GEMINI_API_KEY` there. `server/.env` is ignored by Git. Verify the exact model ID in Google AI Studio and set it as `GEMINI_MODEL` in that file. The server must always read `GEMINI_MODEL` from the environment and must not hard-code a model ID. Never put credentials in `VITE_*` variables, source files, or chat.
+- **Optional development fixture:** Set `USE_FIXTURE=true` in `server/.env` to serve the clearly separated, schema-validated Neural Networks lesson fixture while developing without Gemini quota. This flag is opt-in, is rejected when `NODE_ENV=production`, and is never activated automatically after a Gemini error. With the flag absent or false, generation uses Gemini as usual and provider errors remain errors. Fixture mode does not require Gemini credentials; turn it off before the required live Gemini smoke test and end-to-end demo verification.
 - **Install and start:** From the project root, run `npm install`, copy the example environment file as above, fill in the key, then run `npm run dev`.
 - **Open:** Visit `http://localhost:5173`. Vite forwards `/api/*` to the Express server on `http://127.0.0.1:3001`.
 - **Demo:** Use the pre-tested “Neural Networks” example at Beginner level. Show a generated explanation and map, expand a map node, answer one question incorrectly, and show the linked node's review marker and final quiz summary.
@@ -111,9 +112,15 @@ PRD ref: `prd.md > Topic Entry and Generation`, `prd.md > States and Boundaries`
 
 ### `POST /api/generate` route
 
-Accepts and validates the topic and level, calls the Gemini service, validates the complete result, and returns JSON. Responds with a distinct `429`/`RATE_LIMITED` error for provider rate limits; other failures use a safe `GENERATION_FAILED` response. Never sends raw provider details to the browser.
+Accepts and validates the topic and level, selects either the explicit development fixture or the Gemini service, validates the complete result, and returns JSON. Fixture selection requires `USE_FIXTURE=true` and is rejected in production; it is not a fallback when Gemini fails. With the flag off, the route responds with a distinct `429`/`RATE_LIMITED` error for provider rate limits and a safe `GENERATION_FAILED` response for other failures. Never sends raw provider details to the browser.
 
 PRD ref: `prd.md > Topic Entry and Generation`, `prd.md > States and Boundaries`.
+
+### Development fixture
+
+`server/src/fixtures/neuralNetworksLesson.ts` contains a fixed, valid Beginner “Neural Networks” `GenerateResponse` used only when `USE_FIXTURE=true` outside production. The route runs it through the same response and cross-reference validation as generated content. The fixture is independent of the Gemini service, is never selected after a provider error, and is not included in the browser bundle. `npm run smoke:gemini` always calls Gemini directly and must run with `USE_FIXTURE=false`.
+
+PRD ref: `prd.md > The Core Journey`, `prd.md > Topic Entry and Generation`, `prd.md > Explanation and Concept Map`, `prd.md > Quiz and Review Feedback`.
 
 ### `GeminiService`
 
@@ -189,9 +196,11 @@ project/
 ├── scripts/
 │   └── gemini-smoke-test.ts           # First functional check: Gemini + Zod contract
 ├── server/
-│   ├── .env.example                   # Secret-free key/model placeholders
+│   ├── .env.example                   # Secret-free key/model/fixture placeholders
 │   └── src/
 │       ├── index.ts                   # Express startup, env loading, local bind
+│       ├── fixtures/
+│       │   └── neuralNetworksLesson.ts # Opt-in development lesson; never a provider fallback
 │       ├── routes/
 │       │   └── generate.ts            # POST /api/generate and safe status mapping
 │       └── services/
@@ -233,7 +242,8 @@ No other external runtime service, database, or hosting provider is used.
 - **Provider rate limit** → Return `429` with `RATE_LIMITED`; show a plain-language busy message and disable retry for five seconds.
 - **Malformed or invalid generated response** → Retry once. If it remains invalid, return `GENERATION_FAILED`; show a friendly message and **Try again**, preserving topic and Beginner selection. Never show partial results.
 - **Network error, timeout, or unavailable provider** → Abort the Gemini request after 60 seconds and return `GENERATION_FAILED` without raw provider details; retain the topic and offer **Try again**. Log only sanitized technical context, never the key, full request body, or provider error text.
-- **Missing API key or model configuration** → Fail server startup with an actionable local setup message; never fall back to mock or success-shaped content.
+- **Missing API key or model configuration with fixture disabled** → Fail server startup with an actionable local setup message; never fall back to mock or success-shaped content.
+- **Development fixture enabled in production** → Refuse to start or serve the fixture; the flag is for local development only.
 
 ## What Was Simplified and Why
 
@@ -246,6 +256,7 @@ No other external runtime service, database, or hosting provider is used.
 
 - **Learner choice — React + Vite, Tailwind, React Flow:** matches the requested browser experience; adds frontend dependencies but no deployment requirement.
 - **Learner choice — local Express API and Gemini:** keeps the key on the server and supports one structured generation call; the local demo requires Node.js and a key configured by the learner.
+- **Build revision — opt-in development fixture while Gemini quota is unavailable:** a fixed, validated Neural Networks response may be served only with `USE_FIXTURE=true` outside production. It enables deterministic UI and kernel verification without changing normal Gemini behavior, masking Gemini failures, or entering the browser bundle. Before final review, disable it and pass both the live smoke test and the complete real-model flow.
 - **Learner choice — TypeScript and shared Zod contract:** one source defines the response shape and inferred types; runtime checks still explicitly enforce quiz counts, answer indexes, unique map IDs, valid edge endpoints, and question-to-node references.
 - **Learner choice — one initial model call, with one retry only for invalid model output:** handles malformed responses without retrying provider throttling or ordinary network errors.
 - **Learner choice — no deployment:** the short demo video and public repository are the submission deliverables; reviewers can follow the documented local setup.

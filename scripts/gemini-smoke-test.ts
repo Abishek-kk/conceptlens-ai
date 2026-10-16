@@ -1,9 +1,15 @@
-import { ApiError } from "@google/genai";
+import { ZodError } from "zod";
 import { getServerConfig } from "../server/src/config.js";
 import { generateLesson } from "../server/src/services/gemini.js";
 
 async function main() {
-  getServerConfig();
+  const { useFixture } = getServerConfig();
+  if (useFixture) {
+    throw new Error(
+      "Set USE_FIXTURE=false in server/.env before running the live Gemini smoke test.",
+    );
+  }
+
   const lesson = await generateLesson("Neural Networks", "beginner");
 
   console.log(
@@ -11,16 +17,40 @@ async function main() {
   );
 }
 
+function getHttpStatus(error: unknown): number | undefined {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    typeof error.status === "number"
+  ) {
+    return error.status;
+  }
+
+  return undefined;
+}
+
 main().catch((error: unknown) => {
-  if (error instanceof Error && error.message.startsWith("Set GEMINI_")) {
+  const status = getHttpStatus(error);
+
+  if (error instanceof Error && error.message.startsWith("Set ")) {
     console.error(error.message);
-  } else if (error instanceof ApiError) {
+  } else if (status !== undefined) {
     console.error(
-      `Gemini API returned HTTP ${error.status}. Check key permissions, model availability, and schema support; provider details are not printed.`,
+      `Gemini API returned HTTP ${status}. Check key permissions, model availability, quota, and schema support; provider details are not printed.`,
     );
+  } else if (error instanceof ZodError) {
+    const issuePaths = error.issues
+      .map((issue) => issue.path.join(".") || "response")
+      .join(", ");
+    console.error(
+      `Gemini output failed response validation at: ${issuePaths}. Generated content is omitted.`,
+    );
+  } else if (error instanceof SyntaxError) {
+    console.error("Gemini returned invalid JSON. Provider output is omitted.");
   } else {
     console.error(
-      "Gemini smoke test failed. Check the configured key, model, network, and structured-output support; provider details are not printed.",
+      `Gemini smoke test failed (${error instanceof Error ? error.name : "unknown error"}). Check the configured key, model, network, and structured-output support; provider details are not printed.`,
     );
   }
 

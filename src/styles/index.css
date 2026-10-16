@@ -15,3 +15,86 @@ body {
   min-height: 100vh;
   margin: 0;
 }
+
+.learning-layout {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-areas:
+    "explanation"
+    "map"
+    "quiz";
+}
+
+.learning-layout > :nth-child(1) {
+  grid-area: explanation;
+}
+
+.learning-map {
+  grid-area: map;
+}
+
+.learning-layout > :nth-child(3) {
+  grid-area: quiz;
+}
+
+@media (min-width: 1024px) {
+  .learning-layout {
+    align-items: start;
+    gap: 1.5rem;
+    grid-template-areas:
+      "explanation map"
+      "quiz map";
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-template-rows: auto 1fr;
+  }
+
+  .learning-map {
+    position: sticky;
+    top: 1.5rem;
+  }
+}
+
+.concept-node-default {
+  border-color: #e7e5e4;
+}
+
+.concept-node-selected {
+  border-color: #4f46e5;
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+.concept-node-review {
+  border-color: #f59e0b;
+  background: #fef3c7;
+  box-shadow: 0 0 0 2px rgb(245 158 11 / 28%);
+}
+
+.review-pulse {
+  animation: review-pulse 1.1s ease-out;
+}
+
+@keyframes review-pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.12);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: resolve(process.cwd(), "server/.env") });
 
-export function getServerConfig() {
+export function getGeminiConfig() {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   const model = process.env.GEMINI_MODEL?.trim();
 
@@ -20,4 +20,18 @@ export function getServerConfig() {
   }
 
   return { apiKey, model };
+}
+
+export function getServerConfig() {
+  const useFixture = process.env.USE_FIXTURE?.trim() === "true";
+
+  if (useFixture && process.env.NODE_ENV === "production") {
+    throw new Error("USE_FIXTURE=true is only allowed outside production.");
+  }
+
+  if (!useFixture) {
+    getGeminiConfig();
+  }
+
+  return { useFixture };
 }
