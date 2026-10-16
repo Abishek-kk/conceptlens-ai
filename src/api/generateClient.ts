@@ -5,6 +5,7 @@ import {
 
 export type GenerateErrorCode =
   | "INVALID_REQUEST"
+  | "FIXTURE_TOPIC_UNSUPPORTED"
   | "RATE_LIMITED"
   | "GENERATION_FAILED";
 
@@ -27,6 +28,7 @@ function getErrorCode(value: unknown): GenerateErrorCode {
     const code = value.error.code;
     if (
       code === "INVALID_REQUEST" ||
+      code === "FIXTURE_TOPIC_UNSUPPORTED" ||
       code === "RATE_LIMITED" ||
       code === "GENERATION_FAILED"
     ) {
@@ -42,6 +44,7 @@ export async function requestLesson(topic: string): Promise<GenerateResponse> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ topic, level: "beginner" }),
+    signal: AbortSignal.timeout(65_000),
   });
 
   const payload: unknown = await response.json();

@@ -33,7 +33,9 @@ router.post("/generate", async (request, response) => {
 
     if (useFixture) {
       if (parsedRequest.data.topic.toLowerCase() !== fixtureTopic) {
-        response.status(503).json({ error: { code: "GENERATION_FAILED" } });
+        response
+          .status(400)
+          .json({ error: { code: "FIXTURE_TOPIC_UNSUPPORTED" } });
         return;
       }
 

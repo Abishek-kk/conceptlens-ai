@@ -3,6 +3,7 @@ const exampleTopics = ["Neural Networks", "Photosynthesis", "Supply and Demand"]
 type TopicEntryFormProps = {
   topic: string;
   loading: boolean;
+  rateLimitActive: boolean;
   onTopicChange: (topic: string) => void;
   onGenerate: () => void;
 };
@@ -10,6 +11,7 @@ type TopicEntryFormProps = {
 export function TopicEntryForm({
   topic,
   loading,
+  rateLimitActive,
   onTopicChange,
   onGenerate,
 }: TopicEntryFormProps) {
@@ -38,10 +40,14 @@ export function TopicEntryForm({
       </span>
       <button
         className="min-h-12 w-full shrink-0 rounded-xl bg-indigo-600 px-6 text-base font-semibold text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300 sm:w-auto"
-        disabled={loading || !topic.trim()}
+        disabled={loading || rateLimitActive || !topic.trim()}
         type="submit"
       >
-        {loading ? "Generating..." : "Generate"}
+        {loading
+          ? "Generating..."
+          : rateLimitActive
+            ? "Please wait..."
+            : "Generate"}
       </button>
       <div className="flex flex-wrap gap-2 px-1 pb-1 pt-3 sm:hidden">
         {exampleTopics.map((example) => (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GenerateError, requestLesson } from "./api/generateClient.js";
 import { ConceptMap } from "./components/ConceptMap.js";
 import { ExplanationCard } from "./components/ExplanationCard.js";
@@ -11,13 +11,31 @@ export default function App() {
   const [lesson, setLesson] = useState<GenerateResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [rateLimitRetryAt, setRateLimitRetryAt] = useState<number | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Array<number | null>>([]);
   const [reviewedNodeIds, setReviewedNodeIds] = useState<string[]>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (rateLimitRetryAt === null) {
+      return;
+    }
+
+    const timeout = window.setTimeout(
+      () => setRateLimitRetryAt(null),
+      Math.max(0, rateLimitRetryAt - Date.now()),
+    );
+
+    return () => window.clearTimeout(timeout);
+  }, [rateLimitRetryAt]);
+
   async function generate() {
-    if (!topic.trim() || loading) {
+    if (
+      !topic.trim() ||
+      loading ||
+      (rateLimitRetryAt !== null && Date.now() < rateLimitRetryAt)
+    ) {
       return;
     }
 
@@ -37,6 +55,9 @@ export default function App() {
       setErrorCode(
         error instanceof GenerateError ? error.code : "GENERATION_FAILED",
       );
+      if (error instanceof GenerateError && error.code === "RATE_LIMITED") {
+        setRateLimitRetryAt(Date.now() + 5_000);
+      }
     } finally {
       setLoading(false);
     }
@@ -67,6 +88,7 @@ export default function App() {
     setTopic("");
     setLesson(null);
     setErrorCode(null);
+    setRateLimitRetryAt(null);
     setQuestionIndex(0);
     setAnswers([]);
     setReviewedNodeIds([]);
@@ -76,7 +98,9 @@ export default function App() {
   const errorMessage =
     errorCode === "RATE_LIMITED"
       ? "We're getting a lot of requests. Please wait a moment and try again."
-      : "We couldn't generate this topic right now. Please try again.";
+      : errorCode === "FIXTURE_TOPIC_UNSUPPORTED"
+        ? "The dev fixture only supports Neural Networks. Turn off USE_FIXTURE to use Gemini."
+        : "We couldn't generate this topic right now. Please try again.";
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -126,6 +150,7 @@ export default function App() {
             <TopicEntryForm
               topic={topic}
               loading={loading}
+              rateLimitActive={rateLimitRetryAt !== null}
               onTopicChange={setTopic}
               onGenerate={generate}
             />
@@ -166,10 +191,11 @@ export default function App() {
             <p>{errorMessage}</p>
             <button
               className="min-h-11 rounded-xl bg-indigo-600 px-4 font-semibold text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700"
+              disabled={rateLimitRetryAt !== null}
               onClick={generate}
               type="button"
             >
-              Try again
+              {rateLimitRetryAt === null ? "Try again" : "Please wait..."}
             </button>
           </div>
         )}

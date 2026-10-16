@@ -118,7 +118,7 @@ PRD ref: `prd.md > Topic Entry and Generation`, `prd.md > States and Boundaries`
 
 ### Development fixture
 
-`server/src/fixtures/neuralNetworksLesson.ts` contains a fixed, valid Beginner “Neural Networks” `GenerateResponse` used only when `USE_FIXTURE=true` outside production. The route runs it through the same response and cross-reference validation as generated content. The fixture is independent of the Gemini service, is never selected after a provider error, and is not included in the browser bundle. `npm run smoke:gemini` always calls Gemini directly and must run with `USE_FIXTURE=false`.
+`server/src/fixtures/neuralNetworksLesson.ts` contains a fixed, valid Beginner “Neural Networks” `GenerateResponse` used only when `USE_FIXTURE=true` outside production. The route runs it through the same response and cross-reference validation as generated content. In fixture mode, any other topic returns `400` with `FIXTURE_TOPIC_UNSUPPORTED`; the UI explains that the fixture only supports Neural Networks and that turning off `USE_FIXTURE` uses Gemini. The submitted topic remains editable, Generate re-enables when the request ends, and retrying a supported topic works. The fixture is independent of the Gemini service, is never selected after a provider error, and is not included in the browser bundle. `npm run smoke:gemini` always calls Gemini directly and must run with `USE_FIXTURE=false`.
 
 PRD ref: `prd.md > The Core Journey`, `prd.md > Topic Entry and Generation`, `prd.md > Explanation and Concept Map`, `prd.md > Quiz and Review Feedback`.
 
@@ -180,7 +180,7 @@ type GenerateResponse = {
 
 This is the intended shape; the shared Zod schema is canonical at implementation time. The generated map/quiz data is in browser memory for the current session only. UI state stores the topic, loading/error/success status, selected node ID, current quiz question and submitted answers, and a set of review-node IDs. No user data or generated result is written to a database, file, or browser storage. **Try another topic** clears the current result and quiz state.
 
-The request body is `{ "topic": string, "level": "beginner" }`. Success returns the complete `GenerateResponse`. Errors return a safe JSON code such as `{ "error": { "code": "RATE_LIMITED" } }` or `{ "error": { "code": "GENERATION_FAILED" } }`; do not include raw provider messages.
+The request body is `{ "topic": string, "level": "beginner" }`. Success returns the complete `GenerateResponse`. Errors return a safe JSON code such as `{ "error": { "code": "RATE_LIMITED" } }`, `{ "error": { "code": "GENERATION_FAILED" } }`, or the fixture-only `{ "error": { "code": "FIXTURE_TOPIC_UNSUPPORTED" } }`; do not include raw provider messages.
 
 ## File Structure
 
@@ -196,7 +196,7 @@ project/
 ├── scripts/
 │   └── gemini-smoke-test.ts           # First functional check: Gemini + Zod contract
 ├── server/
-│   ├── .env.example                   # Secret-free key/model/fixture placeholders
+│   ├── .env.example                   # Secret-free key/model placeholders
 │   └── src/
 │       ├── index.ts                   # Express startup, env loading, local bind
 │       ├── fixtures/
@@ -244,6 +244,7 @@ No other external runtime service, database, or hosting provider is used.
 - **Network error, timeout, or unavailable provider** → Abort the Gemini request after 60 seconds and return `GENERATION_FAILED` without raw provider details; retain the topic and offer **Try again**. Log only sanitized technical context, never the key, full request body, or provider error text.
 - **Missing API key or model configuration with fixture disabled** → Fail server startup with an actionable local setup message; never fall back to mock or success-shaped content.
 - **Development fixture enabled in production** → Refuse to start or serve the fixture; the flag is for local development only.
+- **Unsupported topic in development fixture mode** → Return `FIXTURE_TOPIC_UNSUPPORTED` with guidance to use Neural Networks or turn off the fixture for Gemini; keep the input editable and allow retry. This fixture-only response does not change Gemini-mode behavior.
 
 ## What Was Simplified and Why
 
@@ -257,6 +258,7 @@ No other external runtime service, database, or hosting provider is used.
 - **Learner choice — React + Vite, Tailwind, React Flow:** matches the requested browser experience; adds frontend dependencies but no deployment requirement.
 - **Learner choice — local Express API and Gemini:** keeps the key on the server and supports one structured generation call; the local demo requires Node.js and a key configured by the learner.
 - **Build revision — opt-in development fixture while Gemini quota is unavailable:** a fixed, validated Neural Networks response may be served only with `USE_FIXTURE=true` outside production. It enables deterministic UI and kernel verification without changing normal Gemini behavior, masking Gemini failures, or entering the browser bundle. Before final review, disable it and pass both the live smoke test and the complete real-model flow.
+- **Final-review refinement — explicit fixture topic error:** requests for topics other than Neural Networks in fixture mode return a dedicated safe code and user-facing instructions to disable the fixture for Gemini. The input stays available so changing to a supported topic and retrying succeeds; normal Gemini-mode behavior is unchanged.
 - **Learner choice — TypeScript and shared Zod contract:** one source defines the response shape and inferred types; runtime checks still explicitly enforce quiz counts, answer indexes, unique map IDs, valid edge endpoints, and question-to-node references.
 - **Learner choice — one initial model call, with one retry only for invalid model output:** handles malformed responses without retrying provider throttling or ordinary network errors.
 - **Learner choice — no deployment:** the short demo video and public repository are the submission deliverables; reviewers can follow the documented local setup.

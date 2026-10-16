@@ -29,24 +29,25 @@ Build mode: fast
   Learner check: With `USE_FIXTURE=true`, open `http://localhost:5173`, choose “Neural Networks,” generate the lesson, expand a map node, answer one quiz question incorrectly, and confirm the matching node gets an amber “Review this” marker and moves into view.
   Commit: `Connect quiz feedback to concept map`
 
-- [ ] **3. Finish responsive and failure states, setup docs, and demo readiness**
+- [x] **3. Finish responsive and failure states, setup docs, and demo readiness**
   Becomes usable: The POC handles loading, rate limits, malformed model output, timeout/network failures, retry/reset, narrow screens, and quiz completion cleanly, with reproducible local setup instructions.
   Why now: After the core loop is usable and early feedback is collected, complete the remaining PRD behavior and polish without delaying validation of the kernel.
   PRD ref: `prd.md > Look and Feel`, `prd.md > Topic Entry and Generation`, `prd.md > Explanation and Concept Map`, `prd.md > Quiz and Review Feedback`, `prd.md > States and Boundaries`, `prd.md > What We're Building`
   Spec ref: `spec.md > Look and Feel`, `spec.md > Components`, `spec.md > Important Failure Modes`, `spec.md > Where It Runs and How Someone Tries It`
   Build: Add safe user-facing error states and five-second rate-limit cooldown; retry malformed output once while not retrying provider throttles or transport errors; apply the 60-second timeout; preserve topic and level across failures; finish review-node summary and try-another-topic reset; tune responsive layout, loading treatment, map animation, and accessible high-contrast labels; write README key/setup/run/demo instructions.
-  Verify (mechanical): With `USE_FIXTURE=true`, run `npm run build`; verify the production build completes, no Gemini key or fixture is present in frontend output, `server/.env` is ignored, and `server/.env.example` remains trackable. Exercise the documented start command and verify loading, invalid request, simulated Gemini failure/rate limit with the flag off, timeout/network handling, and retry behavior without exposing credentials.
+  Verify (mechanical): Run `npm run build`; verify no Gemini key or fixture content is present in frontend output, `server/.env` is ignored, and `server/.env.example` remains trackable. With `USE_FIXTURE=true`, validate the fixture API/UI flow and friendly unsupported-topic failure. With `USE_FIXTURE=false`, verify real provider errors do not fall back to the fixture and rate-limit retry is disabled for five seconds; inspect the Gemini request's 60-second timeout, one malformed-output retry, and no retry for transport/rate-limit errors. Exercise the documented start command and the browser's network-failure state.
   Learner check: Try the complete fixture-backed demo at desktop and narrow viewport sizes; test a blank topic, a wrong quiz answer, reset, and friendly failure/retry states. Confirm the project is ready for the one-minute video.
   Commit: `Complete ConceptLens demo states and setup`
 
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — fixture-backed explanation, map, and quiz worked; the learner confirmed that a wrong answer marked and panned to its linked node, with no changes requested.
-- [ ] Final kick-the-tires exploration and feedback completed — after Slice 3, try the documented app and record any fixes under Final Review.
+- [x] Final kick-the-tires exploration and feedback completed — learner tried the fixture-backed app and requested clearer guidance for unsupported fixture topics; the refinement is tracked under Final Review.
 
 ## Final Review
 
 - [ ] Live Gemini verification before final review — set `USE_FIXTURE=false`; run `npm run smoke:gemini`; then generate “Neural Networks” in the browser against the configured real model, expand a map node, answer one question incorrectly, and confirm its linked node is highlighted. Confirm all three valid questions and map references appear; do not complete final review unless these checks pass.
+- [ ] Fixture-only unsupported-topic guidance and retry verified — with `USE_FIXTURE=true`, request a different topic, confirm the dedicated explanation and editable topic, then change to “Neural Networks” and retry successfully; confirm Generate is enabled again and Gemini-mode behavior is unchanged with the flag off.
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map
@@ -65,3 +66,5 @@ Activity mode: [live app, static fallback, focused alternative, prior practice, 
 
 - Use Gemini's documented Interactions API with `response_format` and `store: false` — current official docs confirm this is the recommended structured-output method and that interaction records are stored by default; disabling storage preserves the approved no-history behavior.
 - Gemini returned HTTP 429 during Slice 2 smoke and API verification even after the learner updated local configuration. Added an explicit, development-only Neural Networks fixture so the UI and connected-learning kernel can be verified deterministically; it is schema-validated, cannot be selected in production, and never masks a Gemini failure. Before final review, disable the fixture and verify both the real smoke test and complete real-model browser journey.
+- Final hands-on review requested a clearer fixture-only unsupported-topic error, confirmation that Generate recovers and retry works, and unchanged Gemini-mode behavior. Added this as a tracked final-review refinement before implementing it.
+- Implemented the fixture-only explanation and dedicated error code; confirmed the input/Generate state recovers and retrying Neural Networks loads the fixture. With `USE_FIXTURE=false`, a real API request still returned Gemini's `429 RATE_LIMITED` and no fixture content. Per learner request, restarted the local dev server with `USE_FIXTURE=false`; live Gemini remains quota-blocked, so the pre-final-review smoke and full real-model journey are still pending.
