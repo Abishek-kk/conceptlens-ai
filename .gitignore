@@ -1,0 +1,11 @@
+# Local credentials
+.env
+.env.*
+!.env.example
+
+# Generated dependencies and builds
+node_modules/
+dist/
+
+# Personal learning context
+/devpost/learner-profile.md
