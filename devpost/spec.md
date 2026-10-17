@@ -68,6 +68,12 @@ Use mutually compatible current stable dependency versions and commit the genera
 
 The root `README.md` must include these setup steps, how to obtain a key, how to copy the example environment file, and how to run the demo. Do not include a real key in the repository.
 
+## Sharing Instructions
+
+- **Public source repository:** https://github.com/Abishek-kk/conceptlens-ai
+- **Demo video:** Not recorded or uploaded yet. Add the publicly accessible video link here after verifying that reviewers can open it without signing in.
+- **Deployment:** Optional; the local demo is sufficient.
+
 ## Look and Feel
 
 Implement `prd.md > Look and Feel` in Tailwind: a light-only, calm study-tool interface with the `#FAFAF9` background, white cards and subtle borders, indigo primary/selected states, green correct feedback, red incorrect feedback, and a distinct amber review marker. Use a clean sans-serif such as Inter, body text at least 16px, generous spacing, and approximately 12px rounded corners. Keep the map node labels and amber “Review this” tag legible at demo scale. Avoid decorative illustrations and heavy gradients. At widths below 768px, stack explanation, map, then quiz; from 768px up, keep the map sticky beside the explanation and quiz so review feedback and its node remain visible together.
