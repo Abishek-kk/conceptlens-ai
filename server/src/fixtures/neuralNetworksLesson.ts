@@ -65,7 +65,12 @@ export const neuralNetworksLesson = {
       ],
       correctAnswerIndex: 0,
       explanation:
-        "Neurons process signals and pass their results through the network.",
+        "A neuron combines incoming signals into a result. That result is passed onward through the network so the full system can make a prediction.",
+      optionExplanations: [
+        "This is correct because a neuron processes incoming signals and passes a result onward.",
+        "A network learns from examples, but a neuron is not a stored copy of the dataset.",
+        "Neurons help a network process information; they do not stop it from changing during training.",
+      ],
       nodeId: "neurons",
     },
     {
@@ -77,7 +82,12 @@ export const neuralNetworksLesson = {
       ],
       correctAnswerIndex: 1,
       explanation:
-        "Weights set the strength of connections between neurons and are adjusted during learning.",
+        "Weights set how strongly one neuron affects another. During training, the network adjusts these values to improve its predictions.",
+      optionExplanations: [
+        "The number of training examples is part of the dataset, not what a connection weight controls.",
+        "This is correct because a weight sets the strength of influence between connected neurons.",
+        "Quiz order is unrelated to the values a neural network uses to connect its neurons.",
+      ],
       nodeId: "weights",
     },
     {
@@ -89,7 +99,12 @@ export const neuralNetworksLesson = {
       ],
       correctAnswerIndex: 2,
       explanation:
-        "Backpropagation uses the prediction error to guide weight updates through the network.",
+        "Backpropagation sends information about prediction error backward through the network. That signal helps guide updates to the weights that contributed to the result.",
+      optionExplanations: [
+        "Backpropagation uses errors to improve learning; it does not delete examples from the dataset.",
+        "The method helps update a network, rather than turning it into a fixed lookup table.",
+        "This is correct because backpropagation sends prediction error backward to guide weight updates.",
+      ],
       nodeId: "backpropagation",
     },
   ],

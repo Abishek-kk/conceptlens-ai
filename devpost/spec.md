@@ -100,7 +100,7 @@ PRD ref: `prd.md > Screens and Layout`, `prd.md > Explanation and Concept Map`.
 
 ### `QuizPanel`
 
-Shows one of three questions at a time, answer options, progress, feedback, manual **Next**, and the completion score/review-node summary. Submitted answers are locked. A wrong answer updates the shared review-node IDs before the next question is shown.
+Shows one of three questions at a time, answer options, progress, feedback, manual **Next**, and the completion score/review-node summary. Submitted answers are locked. Correct feedback explains why the answer is right. Wrong feedback explains why the selected option is wrong and why the correct option is right in two or three plain-language sentences, then names the linked concept in a **Review this** pointer. A wrong answer updates the shared review-node IDs before the next question is shown; map highlighting and manual **Next** behavior remain unchanged.
 
 PRD ref: `prd.md > Quiz and Review Feedback`.
 
@@ -124,7 +124,7 @@ PRD ref: `prd.md > The Core Journey`, `prd.md > Topic Entry and Generation`, `pr
 
 ### `GeminiService`
 
-Uses `@google/genai` on the server only. Reads `GEMINI_API_KEY` and `GEMINI_MODEL` from the server environment and starts each generation request with one Gemini call, asking for structured JSON based on the shared response schema. The currently verified SDK method is `ai.interactions.create(...)` with `response_format`; pass `store: false` so Gemini does not retain an interaction record for later turns. Recheck the method and options against the installed SDK documentation during setup. If the model output cannot be parsed or fails validation, retries generation once. Retries upstream `429` and `503` responses up to two times with one- then two-second delays; does not retry other provider errors, transport failures, or timeouts. SDK automatic retries remain disabled.
+Uses `@google/genai` on the server only. Reads `GEMINI_API_KEY` and `GEMINI_MODEL` from the server environment and starts each generation request with one Gemini call, asking for structured JSON based on the shared response schema. The prompt requires Beginner-appropriate, topic-specific answer reasoning: a detailed explanation of why the correct answer is right and one short explanation for each option in option order. The currently verified SDK method is `ai.interactions.create(...)` with `response_format`; pass `store: false` so Gemini does not retain an interaction record for later turns. Recheck the method and options against the installed SDK documentation during setup. If the model output cannot be parsed or fails validation, retries generation once. Retries upstream `429` and `503` responses up to two times with one- then two-second delays; does not retry other provider errors, transport failures, or timeouts. SDK automatic retries remain disabled.
 
 PRD ref: `prd.md > Topic Entry and Generation`, `prd.md > States and Boundaries`.
 
@@ -136,13 +136,13 @@ PRD ref: `prd.md > Topic Entry and Generation`, `prd.md > States and Boundaries`
 
 ### Shared `GenerateResponseSchema`
 
-Defines the API response once in Zod and infers its TypeScript type for both app and server. Its schema describes the explanation and example; concept-map nodes (`id`, label, short explanation) and edges; and quiz questions, options, correct-answer index, feedback explanation, and `nodeId`.
+Defines the API response once in Zod and infers its TypeScript type for both app and server. Its schema describes the explanation and example; concept-map nodes (`id`, label, short explanation) and edges; and quiz questions, options, correct-answer index, a non-empty explanation of why the correct answer is right, a non-empty `optionExplanations` string for every option in matching order, and `nodeId`.
 
 PRD ref: `prd.md > Topic Entry and Generation`, `prd.md > Explanation and Concept Map`, `prd.md > Quiz and Review Feedback`.
 
 ### Server response validation
 
-Parses Gemini's JSON with `GenerateResponseSchema`, then verifies unique node IDs, valid edge endpoints, exactly three questions, three or four options per question, a correct-answer index within the option list, and a question `nodeId` that exists in the map. Any failed check invalidates the entire result; no partial results are returned.
+Parses Gemini's JSON with `GenerateResponseSchema`, then verifies unique node IDs, valid edge endpoints, exactly three questions, three or four options per question, non-empty answer explanations with one `optionExplanations` entry per option, a correct-answer index within the option list, and a question `nodeId` that exists in the map. Any failed check invalidates the entire result; no partial results are returned. An invalid model response, including missing or wrong-length option explanations, receives one automatic retry before the safe generation failure response.
 
 PRD ref: `prd.md > Topic Entry and Generation`, `prd.md > States and Boundaries`.
 
@@ -173,6 +173,7 @@ type GenerateResponse = {
     options: string[];
     correctAnswerIndex: number;
     explanation: string;
+    optionExplanations: string[];
     nodeId: string;
   }>;
 };
@@ -205,7 +206,8 @@ project/
 │       │   └── generate.ts            # POST /api/generate and safe status mapping
 │       └── services/
 │           ├── gemini.ts              # Gemini structured-output call
-│           └── validateResponse.ts   # Zod parse and cross-reference checks
+│           ├── validateResponse.ts   # Zod parse and cross-reference checks
+│           └── validateResponse.test.ts # Node tests for malformed quiz explanations
 ├── shared/
 │   └── generateSchema.ts              # Canonical Zod response schema and inferred type
 ├── src/

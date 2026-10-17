@@ -69,6 +69,7 @@ function QuizQuestionView({
   onAnswer,
   onNext,
   isLastQuestion,
+  reviewNodeLabel,
 }: {
   question: QuizQuestion;
   questionIndex: number;
@@ -76,6 +77,7 @@ function QuizQuestionView({
   onAnswer: (answerIndex: number) => void;
   onNext: () => void;
   isLastQuestion: boolean;
+  reviewNodeLabel: string | undefined;
 }) {
   const isCorrect = selectedAnswer === question.correctAnswerIndex;
 
@@ -147,8 +149,26 @@ function QuizQuestionView({
           }`}
         >
           <p className="font-semibold">{isCorrect ? "Correct" : "Not quite"}</p>
-          {!isCorrect && (
+          {isCorrect ? (
             <p className="mt-1 text-base leading-6">{question.explanation}</p>
+          ) : (
+            <div className="mt-2 space-y-2 text-base leading-6">
+              <p>
+                <span className="font-semibold">Why your choice doesn’t fit: </span>
+                {question.optionExplanations[selectedAnswer]}
+              </p>
+              <p>
+                <span className="font-semibold">
+                  Why the correct answer fits:{" "}
+                </span>
+                {question.explanation}
+              </p>
+              {reviewNodeLabel && (
+                <p className="rounded-lg bg-amber-100 px-3 py-2 font-semibold text-amber-950">
+                  Review this: {reviewNodeLabel}
+                </p>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -199,6 +219,9 @@ export function QuizPanel(props: QuizPanelProps) {
           onAnswer={onAnswer}
           onNext={onNext}
           isLastQuestion={questionIndex === quiz.length - 1}
+          reviewNodeLabel={mapNodes.find(
+            (node) => node.id === quiz[questionIndex].nodeId,
+          )?.label}
         />
       )}
     </section>

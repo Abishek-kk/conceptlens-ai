@@ -82,15 +82,17 @@ Source: `scope.md > The Unique Kernel`, `scope.md > The Core Loop`, `scope.md > 
 - The quiz has exactly three questions, in a fixed order, with three or four answer options per question.
 - Show one question at a time with a progress indicator such as “Question 1 of 3.” Questions cannot be skipped, revisited, or reordered.
 - After the student selects an answer, lock the options and show feedback immediately.
-- For a correct answer, mark the chosen option green and show a short “Correct” message.
-- For a wrong answer, mark the chosen option red, identify the correct option, explain the mistake briefly, and mark the question's corresponding map node for review.
+- For a correct answer, mark the chosen option green, show a short “Correct” message, and explain why it is right.
+- For a wrong answer, mark the chosen option red, identify the correct option, explain in two or three plain-language sentences why the selected option is wrong and the correct option is right, and name the linked map node as a **Review this** pointer.
+- Each question includes a detailed explanation of why its correct answer is right and a short, option-specific explanation for every answer choice, in the same order as the options.
 - In both cases, show **Next**. Do not auto-advance; the student advances only by clicking it.
 - After question three, show the score out of three and the list of nodes marked for review. **Try another topic** resets to the initial state.
 
 **Acceptance criteria**
 - Exactly one question and a “Question n of 3” indicator are visible at a time; each has three or four choices.
 - Selecting an answer locks the choices and displays correct/wrong feedback without advancing automatically.
-- Correct feedback marks the answer green; wrong feedback marks the selected answer red, identifies the correct answer, explains the mistake, and marks the linked map node.
+- Correct feedback marks the answer green and explains why it is right. Wrong feedback marks the selected answer red, identifies the correct answer, explains why the selected option is wrong and the correct option is right in two or three plain-language sentences, and names the linked concept in a **Review this** pointer.
+- Every quiz question has a non-empty correct-answer explanation and a non-empty `optionExplanations` entry for each answer option, in matching order. Missing or wrong-length option explanations invalidate the complete response.
 - **Next** advances to the next question; no skip or back action is available.
 - After question three, the score is out of three and the review list matches the nodes marked on the map.
 - **Try another topic** returns to the initial state and clears the current topic's generated content and quiz progress.
