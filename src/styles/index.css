@@ -37,7 +37,7 @@ body {
   grid-area: quiz;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .learning-layout {
     align-items: start;
     gap: 1.5rem;

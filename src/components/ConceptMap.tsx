@@ -164,7 +164,7 @@ function MapCanvas({
 
   return (
     <>
-      <div className="concept-flow-canvas h-[430px] overflow-hidden rounded-xl border border-stone-200 bg-stone-50 sm:h-[520px] lg:h-[min(70vh,640px)]">
+      <div className="concept-flow-canvas h-[430px] overflow-hidden rounded-xl border border-stone-200 bg-stone-50 sm:h-[520px] md:h-[min(55vh,440px)] lg:h-[min(60vh,520px)]">
         <ReactFlow
           nodes={nodes}
           edges={edges}

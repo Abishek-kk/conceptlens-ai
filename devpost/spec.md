@@ -70,7 +70,7 @@ The root `README.md` must include these setup steps, how to obtain a key, how to
 
 ## Look and Feel
 
-Implement `prd.md > Look and Feel` in Tailwind: a light-only, calm study-tool interface with the `#FAFAF9` background, white cards and subtle borders, indigo primary/selected states, green correct feedback, red incorrect feedback, and a distinct amber review marker. Use a clean sans-serif such as Inter, body text at least 16px, generous spacing, and approximately 12px rounded corners. Keep the map node labels and amber “Review this” tag legible at demo scale. Avoid decorative illustrations and heavy gradients. Use responsive CSS to stack explanation, map, then quiz on narrow screens.
+Implement `prd.md > Look and Feel` in Tailwind: a light-only, calm study-tool interface with the `#FAFAF9` background, white cards and subtle borders, indigo primary/selected states, green correct feedback, red incorrect feedback, and a distinct amber review marker. Use a clean sans-serif such as Inter, body text at least 16px, generous spacing, and approximately 12px rounded corners. Keep the map node labels and amber “Review this” tag legible at demo scale. Avoid decorative illustrations and heavy gradients. At widths below 768px, stack explanation, map, then quiz; from 768px up, keep the map sticky beside the explanation and quiz so review feedback and its node remain visible together.
 
 ## Components
 
@@ -100,7 +100,7 @@ PRD ref: `prd.md > Screens and Layout`, `prd.md > Explanation and Concept Map`.
 
 ### `QuizPanel`
 
-Shows one of three questions at a time, answer options, progress, feedback, manual **Next**, and the completion score/review-node summary. Submitted answers are locked. Correct feedback explains why the answer is right. Wrong feedback explains why the selected option is wrong and why the correct option is right in two or three plain-language sentences, then names the linked concept in a **Review this** pointer. A wrong answer updates the shared review-node IDs before the next question is shown; map highlighting and manual **Next** behavior remain unchanged.
+Shows one of three questions at a time, answer options, progress, feedback, manual **Next**, and the completion score/review-node summary. Submitted answers are locked. Bring the feedback into view after submission. Correct feedback gives one or two short sentences explaining why the answer is right. Wrong feedback gives two short, question-specific sentences explaining why the selected option is wrong, then two short, topic-specific sentences explaining why the correct option is right. The separate **Review this: `<concept>`** line names the linked map node. Long rationale text scrolls inside the feedback panel, and the **Next** action sticks near the viewport bottom while the answered question is active so it remains available without clipping the explanation. A wrong answer updates the shared review-node IDs before the next question is shown; the amber map highlight and manual **Next** behavior remain unchanged.
 
 PRD ref: `prd.md > Quiz and Review Feedback`.
 
@@ -124,7 +124,7 @@ PRD ref: `prd.md > The Core Journey`, `prd.md > Topic Entry and Generation`, `pr
 
 ### `GeminiService`
 
-Uses `@google/genai` on the server only. Reads `GEMINI_API_KEY` and `GEMINI_MODEL` from the server environment and starts each generation request with one Gemini call, asking for structured JSON based on the shared response schema. The prompt requires Beginner-appropriate, topic-specific answer reasoning: a detailed explanation of why the correct answer is right and one short explanation for each option in option order. The currently verified SDK method is `ai.interactions.create(...)` with `response_format`; pass `store: false` so Gemini does not retain an interaction record for later turns. Recheck the method and options against the installed SDK documentation during setup. If the model output cannot be parsed or fails validation, retries generation once. Retries upstream `429` and `503` responses up to two times with one- then two-second delays; does not retry other provider errors, transport failures, or timeouts. SDK automatic retries remain disabled.
+Uses `@google/genai` on the server only. Reads `GEMINI_API_KEY` and `GEMINI_MODEL` from the server environment and starts each generation request with one Gemini call, asking for structured JSON based on the shared response schema. The prompt requires Beginner-appropriate reasoning: exactly two short sentences for why the correct answer is right; exactly two short, question-specific sentences for each wrong option; and one concise explanation for the correct option in `optionExplanations`. It also requires every question's `nodeId` to target the most specific concept tested, using the main topic node only for a genuinely whole-topic question, and to ensure that concept exists in the map. The currently verified SDK method is `ai.interactions.create(...)` with `response_format`; pass `store: false` so Gemini does not retain an interaction record for later turns. Recheck the method and options against the installed SDK documentation during setup. If the model output cannot be parsed or fails validation, retries generation once. Retries upstream `429` and `503` responses up to two times with one- then two-second delays; does not retry other provider errors, transport failures, or timeouts. SDK automatic retries remain disabled.
 
 PRD ref: `prd.md > Topic Entry and Generation`, `prd.md > States and Boundaries`.
 
@@ -136,13 +136,13 @@ PRD ref: `prd.md > Topic Entry and Generation`, `prd.md > States and Boundaries`
 
 ### Shared `GenerateResponseSchema`
 
-Defines the API response once in Zod and infers its TypeScript type for both app and server. Its schema describes the explanation and example; concept-map nodes (`id`, label, short explanation) and edges; and quiz questions, options, correct-answer index, a non-empty explanation of why the correct answer is right, a non-empty `optionExplanations` string for every option in matching order, and `nodeId`.
+Defines the API response once in Zod and infers its TypeScript type for both app and server. Its schema descriptions guide Gemini to produce a two-sentence correct-answer explanation, two short sentences for each wrong-option explanation, one concise correct-option explanation, and a `nodeId` for the most specific tested concept. Structural validation requires non-empty explanations and an `optionExplanations` array matching the options; validation also requires the `nodeId` to exist. Semantic alignment between a question and its node is guided by the prompt and checked during the live flow.
 
 PRD ref: `prd.md > Topic Entry and Generation`, `prd.md > Explanation and Concept Map`, `prd.md > Quiz and Review Feedback`.
 
 ### Server response validation
 
-Parses Gemini's JSON with `GenerateResponseSchema`, then verifies unique node IDs, valid edge endpoints, exactly three questions, three or four options per question, non-empty answer explanations with one `optionExplanations` entry per option, a correct-answer index within the option list, and a question `nodeId` that exists in the map. Any failed check invalidates the entire result; no partial results are returned. An invalid model response, including missing or wrong-length option explanations, receives one automatic retry before the safe generation failure response.
+Parses Gemini's JSON with `GenerateResponseSchema`, then verifies unique node IDs, valid edge endpoints, exactly three questions, three or four options per question, non-empty answer explanations with one `optionExplanations` entry per option, a correct-answer index within the option list, and a question `nodeId` that exists in the map. The prompt directs semantic node specificity because a structural schema cannot determine whether prose truly tests a particular concept. Any failed structural check invalidates the entire result; no partial results are returned. An invalid model response, including missing or wrong-length option explanations, receives one automatic retry before the safe generation failure response.
 
 PRD ref: `prd.md > Topic Entry and Generation`, `prd.md > States and Boundaries`.
 
@@ -179,7 +179,7 @@ type GenerateResponse = {
 };
 ```
 
-This is the intended shape; the shared Zod schema is canonical at implementation time. The generated map/quiz data is in browser memory for the current session only. UI state stores the topic, loading/error/success status, selected node ID, current quiz question and submitted answers, and a set of review-node IDs. No user data or generated result is written to a database, file, or browser storage. **Try another topic** clears the current result and quiz state.
+This is the intended shape; the shared Zod schema is canonical at implementation time. `explanation` has two short sentences explaining the correct answer. `optionExplanations` follows `options` in order: wrong options get two short, question-specific sentences; the correct option gets one concise rationale. `nodeId` must name the most specific tested concept in the map unless the question genuinely covers the whole topic. The generated map/quiz data is in browser memory for the current session only. UI state stores the topic, loading/error/success status, selected node ID, current quiz question and submitted answers, and a set of review-node IDs. No user data or generated result is written to a database, file, or browser storage. **Try another topic** clears the current result and quiz state.
 
 The request body is `{ "topic": string, "level": "beginner" }`. Success returns the complete `GenerateResponse`. Errors return a safe JSON code such as `{ "error": { "code": "RATE_LIMITED" } }`, `{ "error": { "code": "GENERATION_FAILED" } }`, or the fixture-only `{ "error": { "code": "FIXTURE_TOPIC_UNSUPPORTED" } }`; do not include raw provider messages.
 

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import type { GenerateResponse } from "../../shared/generateSchema.js";
 
 type QuizQuestion = GenerateResponse["quiz"][number];
@@ -80,6 +81,13 @@ function QuizQuestionView({
   reviewNodeLabel: string | undefined;
 }) {
   const isCorrect = selectedAnswer === question.correctAnswerIndex;
+  const feedbackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selectedAnswer !== null) {
+      feedbackRef.current?.scrollIntoView({ block: "start" });
+    }
+  }, [selectedAnswer]);
 
   return (
     <section aria-live="polite">
@@ -142,6 +150,7 @@ function QuizQuestionView({
       </div>
       {selectedAnswer !== null && (
         <div
+          ref={feedbackRef}
           className={`mt-4 rounded-xl p-4 ${
             isCorrect
               ? "bg-emerald-50 text-emerald-950"
@@ -152,34 +161,42 @@ function QuizQuestionView({
           {isCorrect ? (
             <p className="mt-1 text-base leading-6">{question.explanation}</p>
           ) : (
-            <div className="mt-2 space-y-2 text-base leading-6">
-              <p>
-                <span className="font-semibold">Why your choice doesn’t fit: </span>
-                {question.optionExplanations[selectedAnswer]}
-              </p>
-              <p>
-                <span className="font-semibold">
-                  Why the correct answer fits:{" "}
-                </span>
-                {question.explanation}
-              </p>
+            <>
+              <div className="mt-2 max-h-36 overflow-y-auto overscroll-contain pr-1 text-base leading-6 sm:max-h-44">
+                <div className="space-y-2">
+                  <p>
+                    <span className="font-semibold">
+                      Why your choice doesn’t fit:{" "}
+                    </span>
+                    {question.optionExplanations[selectedAnswer]}
+                  </p>
+                  <p>
+                    <span className="font-semibold">
+                      Why the correct answer fits:{" "}
+                    </span>
+                    {question.explanation}
+                  </p>
+                </div>
+              </div>
               {reviewNodeLabel && (
-                <p className="rounded-lg bg-amber-100 px-3 py-2 font-semibold text-amber-950">
+                <p className="mt-2 rounded-lg bg-amber-100 px-3 py-2 font-semibold text-amber-950">
                   Review this: {reviewNodeLabel}
                 </p>
               )}
-            </div>
+            </>
           )}
         </div>
       )}
       {selectedAnswer !== null && (
-        <button
-          className="mt-5 min-h-12 rounded-xl bg-indigo-600 px-5 text-base font-semibold text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700"
-          onClick={onNext}
-          type="button"
-        >
-          {isLastQuestion ? "See results" : "Next"}
-        </button>
+        <div className="sticky bottom-0 z-10 -mx-6 mt-3 border-t border-stone-100 bg-white/95 px-6 py-3 backdrop-blur-sm">
+          <button
+            className="min-h-12 rounded-xl bg-indigo-600 px-5 text-base font-semibold text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700"
+            onClick={onNext}
+            type="button"
+          >
+            {isLastQuestion ? "See results" : "Next"}
+          </button>
+        </div>
       )}
     </section>
   );

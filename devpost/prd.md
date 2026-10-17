@@ -25,8 +25,8 @@ Source: `scope.md > The Unique Kernel`, `scope.md > What "Working" Looks Like`.
 ConceptLens AI is a single-page experience; generation replaces the initial empty state with the results state.
 
 - **Initial state:** A centered, prominent topic input, a single Beginner level indicator, a primary **Generate** button, and two or three clickable example topics. “Neural Networks” is the pre-tested demo topic. No explanation, map, or quiz is shown before generation.
-- **Results state on wide screens:** Explanation card above the quiz in the left column; concept map in the right column. The map stays visible while the student scrolls through the quiz so feedback and its highlighted node can be seen together.
-- **Results state on narrow screens:** Stack the explanation, map, then quiz.
+- **Results state at tablet and wider sizes (768px and up):** Explanation card above the quiz in the left column; concept map in the right column. The map stays visible while the student scrolls through the quiz so feedback and its highlighted node can be seen together.
+- **Results state on narrow screens (under 768px):** Stack the explanation, map, then quiz.
 - **Quiz completion:** The quiz area shows the score and review-node summary, with a **Try another topic** action.
 
 ## Look and Feel
@@ -81,18 +81,21 @@ Source: `scope.md > The Unique Kernel`, `scope.md > The Core Loop`, `scope.md > 
 
 - The quiz has exactly three questions, in a fixed order, with three or four answer options per question.
 - Show one question at a time with a progress indicator such as “Question 1 of 3.” Questions cannot be skipped, revisited, or reordered.
-- After the student selects an answer, lock the options and show feedback immediately.
-- For a correct answer, mark the chosen option green, show a short “Correct” message, and explain why it is right.
-- For a wrong answer, mark the chosen option red, identify the correct option, explain in two or three plain-language sentences why the selected option is wrong and the correct option is right, and name the linked map node as a **Review this** pointer.
-- Each question includes a detailed explanation of why its correct answer is right and a short, option-specific explanation for every answer choice, in the same order as the options.
+- After the student selects an answer, lock the options, show feedback immediately, and bring it into view.
+- For a correct answer, mark the chosen option green, show a short “Correct” message, and explain why it is right in one or two sentences.
+- For a wrong answer, mark the chosen option red and identify the correct option. Show two short, plain-language sentences explaining why the selected option is wrong, followed by two short sentences explaining why the correct option is right. Keep both explanations specific to the question and topic, with no filler or repeated question. Put **Review this: `<concept>`** on a separate line naming the linked map node.
+- Each question includes a two-sentence explanation of why its correct answer is right and a short, option-specific explanation for every answer choice, in the same order as the options. Each wrong option's explanation has exactly two short sentences; the correct option's entry is one concise sentence.
+- The question's `nodeId` points to the most specific map concept it tests. Use the main topic node only when the question genuinely tests the topic as a whole.
+- Keep the feedback, **Next**, and reviewed map node usable together. If the rationale needs more room, let its panel scroll or tighten spacing; never clip the explanation. At tablet and wider sizes, keep the map sticky beside the quiz.
 - In both cases, show **Next**. Do not auto-advance; the student advances only by clicking it.
 - After question three, show the score out of three and the list of nodes marked for review. **Try another topic** resets to the initial state.
 
 **Acceptance criteria**
 - Exactly one question and a “Question n of 3” indicator are visible at a time; each has three or four choices.
-- Selecting an answer locks the choices and displays correct/wrong feedback without advancing automatically.
-- Correct feedback marks the answer green and explains why it is right. Wrong feedback marks the selected answer red, identifies the correct answer, explains why the selected option is wrong and the correct option is right in two or three plain-language sentences, and names the linked concept in a **Review this** pointer.
-- Every quiz question has a non-empty correct-answer explanation and a non-empty `optionExplanations` entry for each answer option, in matching order. Missing or wrong-length option explanations invalidate the complete response.
+- Selecting an answer locks the choices and brings correct/wrong feedback into view without advancing automatically.
+- Correct feedback marks the answer green and explains why it is right in one or two short sentences. Wrong feedback marks the selected answer red, identifies the correct answer, gives two short sentences for why the selected option is wrong and two for why the correct option is right, then shows a separate **Review this: `<concept>`** pointer to the tested node.
+- Every quiz question has a non-empty two-sentence correct-answer explanation and a non-empty `optionExplanations` entry for each answer option, in matching order. Wrong-option explanations have two short sentences and the correct-option entry has one concise sentence. Missing or wrong-length option explanations invalidate the complete response.
+- Each question links to its most specific tested map concept; the main topic node is used only for a genuinely whole-topic question. The feedback layout does not clip explanations or displace **Next** and the amber review marker; long rationale text can scroll within its panel.
 - **Next** advances to the next question; no skip or back action is available.
 - After question three, the score is out of three and the review list matches the nodes marked on the map.
 - **Try another topic** returns to the initial state and clears the current topic's generated content and quiz progress.

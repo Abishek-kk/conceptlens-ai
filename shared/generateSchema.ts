@@ -10,9 +10,24 @@ const QuizQuestionSchema = z
     question: z.string().trim().min(1),
     options: z.array(z.string().trim().min(1)).min(3).max(4),
     correctAnswerIndex: z.number().int().nonnegative(),
-    explanation: z.string().trim().min(1),
-    optionExplanations: z.array(z.string().trim().min(1)),
-    nodeId: z.string().min(1),
+    explanation: z
+      .string()
+      .trim()
+      .min(1)
+      .describe(
+        "Exactly two short, plain-language sentences explaining why the correct answer is right for the topic.",
+      ),
+    optionExplanations: z
+      .array(z.string().trim().min(1))
+      .describe(
+        "One explanation per answer option in order. Each wrong option needs exactly two short, plain, question-specific sentences; the correct option needs one concise sentence.",
+      ),
+    nodeId: z
+      .string()
+      .min(1)
+      .describe(
+        "ID of the most specific concept-map node tested by this question. Use the main topic node only when the question genuinely tests the topic as a whole.",
+      ),
   })
   .superRefine(({ options, optionExplanations }, context) => {
     if (optionExplanations.length !== options.length) {
