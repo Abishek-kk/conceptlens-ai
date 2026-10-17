@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A compact code map for the ConceptLens AI proof of concept."
+    />
+    <title>ConceptLens AI — App Map</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        color: #1c1917;
+        background: #fafaf9;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 4rem;
+        line-height: 1.6;
+      }
+
+      a {
+        color: #4338ca;
+        text-decoration-thickness: 0.08em;
+        text-underline-offset: 0.18em;
+      }
+
+      a:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid #4f46e5;
+        outline-offset: 3px;
+        border-radius: 4px;
+      }
+
+      header,
+      section,
+      figure,
+      details {
+        margin: 1.5rem 0;
+        padding: 1.25rem;
+        border: 1px solid #e7e5e4;
+        border-radius: 14px;
+        background: #fff;
+      }
+
+      header {
+        border-top: 4px solid #4f46e5;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        max-width: 18ch;
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        line-height: 1.1;
+        letter-spacing: -0.04em;
+      }
+
+      h2 {
+        font-size: 1.35rem;
+        letter-spacing: -0.02em;
+      }
+
+      h3 {
+        margin-bottom: 0.35rem;
+        font-size: 1rem;
+      }
+
+      code {
+        overflow-wrap: anywhere;
+        font-size: 0.92em;
+      }
+
+      .eyebrow {
+        color: #4338ca;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .muted {
+        color: #57534e;
+      }
+
+      .diagram {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .route {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+        gap: 1rem;
+        padding-left: 1.5rem;
+      }
+
+      .route li {
+        padding-left: 0.25rem;
+      }
+
+      .route p {
+        margin-bottom: 0;
+      }
+
+      .pointers {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .pointers p {
+        margin: 0;
+      }
+
+      .practice {
+        border-left: 4px solid #f59e0b;
+      }
+
+      footer {
+        padding: 0 0.25rem;
+        color: #57534e;
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 600px) {
+        body {
+          padding: 1rem 0.75rem 2rem;
+        }
+
+        header,
+        section,
+        figure,
+        details {
+          padding: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p class="eyebrow">ConceptLens AI · code map</p>
+      <h1>From a wrong answer to a concept to review</h1>
+      <p class="muted">
+        The app turns one topic into an explanation, an explorable concept map,
+        and a three-question quiz. A wrong answer names and highlights the map
+        concept it tested.
+      </p>
+    </header>
+
+    <main>
+      <section aria-labelledby="flow-heading">
+        <h2 id="flow-heading">One connected learning flow</h2>
+        <figure>
+          <svg
+            class="diagram"
+            viewBox="0 0 1000 190"
+            role="img"
+            aria-labelledby="flow-title flow-description"
+          >
+            <title id="flow-title">Generated quiz feedback reaches the map</title>
+            <desc id="flow-description">
+              Gemini returns a lesson. The shared schema and server validate
+              its question-to-node link. The quiz shows reasoning; the app
+              records a wrong answer's node ID; the map highlights that node.
+            </desc>
+            <defs>
+              <marker
+                id="arrow"
+                markerWidth="8"
+                markerHeight="8"
+                refX="7"
+                refY="4"
+                orient="auto"
+              >
+                <path d="M0,0 L8,4 L0,8 z" fill="#78716c" />
+              </marker>
+            </defs>
+            <g fill="#fafaf9" stroke="#d6d3d1" stroke-width="2">
+              <rect x="10" y="38" width="170" height="100" rx="14" />
+              <rect x="210" y="38" width="170" height="100" rx="14" />
+              <rect x="410" y="38" width="170" height="100" rx="14" />
+              <rect x="610" y="38" width="170" height="100" rx="14" />
+              <rect x="810" y="38" width="170" height="100" rx="14" />
+            </g>
+            <g
+              fill="none"
+              stroke="#78716c"
+              stroke-width="2"
+              marker-end="url(#arrow)"
+            >
+              <path d="M182 88 H202" />
+              <path d="M382 88 H402" />
+              <path d="M582 88 H602" />
+              <path d="M782 88 H802" />
+            </g>
+            <g
+              fill="#1c1917"
+              font-family="Inter, ui-sans-serif, system-ui, sans-serif"
+              font-size="15"
+              font-weight="650"
+              text-anchor="middle"
+            >
+              <text x="95" y="77">
+                <tspan x="95">Gemini lesson</tspan>
+                <tspan x="95" dy="23">with node IDs</tspan>
+              </text>
+              <text x="295" y="77">
+                <tspan x="295">Zod schema</tspan>
+                <tspan x="295" dy="23">+ link checks</tspan>
+              </text>
+              <text x="495" y="77">
+                <tspan x="495">Question</tspan>
+                <tspan x="495" dy="23">+ reasoning</tspan>
+              </text>
+              <text x="695" y="77">
+                <tspan x="695">Answer records</tspan>
+                <tspan x="695" dy="23">the tested node</tspan>
+              </text>
+              <text x="895" y="77">
+                <tspan x="895">Map pans and</tspan>
+                <tspan x="895" dy="23">marks review</tspan>
+              </text>
+            </g>
+          </svg>
+          <figcaption class="muted">
+            A wrong answer carries the same <code>nodeId</code> from the quiz
+            into the map's amber review state.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section aria-labelledby="route-heading">
+        <h2 id="route-heading">A three-stop reference route</h2>
+        <p class="muted">
+          Follow this route in the editor to see how one answer reaches the
+          highlighted concept.
+        </p>
+        <ol class="route">
+          <li>
+            <h3>
+              <a href="../src/components/QuizPanel.tsx"
+                ><code>src/components/QuizPanel.tsx</code></a
+              >
+            </h3>
+            <p>
+              Start at <code>QuizQuestionView</code>. It renders the selected
+              option's reasoning, the correct-answer explanation, and the
+              separate review pointer.
+            </p>
+          </li>
+          <li>
+            <h3>
+              <a href="../src/App.tsx"><code>src/App.tsx</code></a>
+            </h3>
+            <p>
+              Follow <code>answerQuestion</code>. A wrong answer adds that
+              question's <code>nodeId</code> to the in-session review IDs.
+            </p>
+          </li>
+          <li>
+            <h3>
+              <a href="../src/components/ConceptMap.tsx"
+                ><code>src/components/ConceptMap.tsx</code></a
+              >
+            </h3>
+            <p>
+              In <code>MapCanvas</code>, the same ID sets the amber marker and
+              requests a pan to the reviewed node.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section aria-labelledby="change-heading">
+        <h2 id="change-heading">To change this, start here</h2>
+        <div class="pointers">
+          <p>
+            <a href="../server/src/services/gemini.ts"
+              ><code>server/src/services/gemini.ts</code></a
+            >, <code>createInteractionWithRetries</code>: change the lesson
+            instructions sent to Gemini.
+          </p>
+          <p>
+            <a href="../shared/generateSchema.ts"
+              ><code>shared/generateSchema.ts</code></a
+            >, <code>QuizQuestionSchema</code>: change the shared question
+            contract and its structured-output guidance.
+          </p>
+          <p>
+            <a href="../server/src/services/validateResponse.ts"
+              ><code>server/src/services/validateResponse.ts</code></a
+            >, <code>validateGenerateResponse</code>: change structural and
+            question-to-map link checks.
+          </p>
+          <p>
+            <a href="../src/components/QuizPanel.tsx"
+              ><code>src/components/QuizPanel.tsx</code></a
+            >: change the feedback wording or its scrollable layout.
+          </p>
+        </div>
+      </section>
+
+      <section class="practice" aria-labelledby="practice-heading">
+        <h2 id="practice-heading">A practice to reuse</h2>
+        <p>
+          When generated data refers to another record by ID, validate both
+          that the ID exists and, with a real response, that it names the
+          concept the question actually tests. Here, schema validation checks
+          the shape and the server checks the link; the live review caught a
+          question incorrectly linked to the root topic, so the prompt was
+          tightened and the live flow was run again.
+        </p>
+      </section>
+
+      <details>
+        <summary>Run the app again</summary>
+        <p class="muted">
+          From the repository root, run <code>npm run dev</code>, then open
+          <a href="http://localhost:5173">http://localhost:5173</a>. Gemini
+          mode requires local values in <code>server/.env</code>; follow the
+          setup notes in <a href="../README.md">README.md</a>.
+        </p>
+      </details>
+    </main>
+
+    <footer>
+      Snapshot of source commit <code>8ac94e6</code>. This map is a standalone
+      offline guide; refresh its code references if the app changes.
+    </footer>
+  </body>
+</html>

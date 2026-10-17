@@ -46,22 +46,22 @@ Build mode: fast
 
 ## Final Review
 
-- [ ] Live Gemini verification before final review — set `USE_FIXTURE=false`; run `npm run smoke:gemini`; then generate “Neural Networks” in the browser against the configured real model, expand a map node, answer one question incorrectly, and confirm its linked node is highlighted. Confirm all three valid questions and map references appear; do not complete final review unless these checks pass.
-- [ ] Quiz feedback refinement verified — wrong answers show two short sentences for why the selected option is wrong, two for why the correct answer is right, and a separate `Review this: <specific concept>` line; correct answers stay brief. Confirm question `nodeId`s target their specific concepts, the feedback can scroll without clipping, **Next** stays visible, and the amber map node remains visible at tablet/desktop sizes. Re-run the live “Neural Networks” flow and check the updated response contract.
-- [ ] Fixture-only unsupported-topic guidance and retry verified — with `USE_FIXTURE=true`, request a different topic, confirm the dedicated explanation and editable topic, then change to “Neural Networks” and retry successfully; confirm Generate is enabled again and Gemini-mode behavior is unchanged with the flag off.
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Live Gemini verification before final review — `npm run smoke:gemini` passed; the live “Neural Networks” flow returned three linked questions, and an intentional wrong answer highlighted its matching map node.
+- [x] Quiz feedback refinement verified — live Gemini output showed two short sentences for the selected wrong option and two for the correct answer, plus a separate `Review this: Artificial Neurons` line. The matching amber map node and sticky **Next** remained visible at tablet width, with rationale scrolling. The learner reviewed the live result and confirmed it meets the change. Validation tests passed for missing and wrong-length `optionExplanations`.
+- [x] Fixture-only unsupported-topic guidance and retry verified — isolated fixture-route checks returned `FIXTURE_TOPIC_UNSUPPORTED` for an unsupported topic and a validated three-question lesson for “Neural Networks”; the existing UI recovery/editable-topic behavior was previously verified. Live Gemini smoke and browser generation with `USE_FIXTURE` unset confirmed there was no fixture fallback.
+- [x] Final review complete — feedback resolved and learner confirmed the proof of concept is ready to ship.
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — focused alternative grounded in the learner's structured-output safety goal and actual build evidence
-- [ ] Optional edit and transfer reflection addressed — offer one safe, non-kernel edit or accept a decline; offer one optional transfer reflection
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — focused alternative connected the live question-to-node mismatch to the schema/prompt refinement and its verified rerun.
+- [x] Optional edit and transfer reflection addressed — no edit was needed for the focused alternative; the optional reflection was answered and recorded only in the ignored learner profile.
+- [x] `devpost/app-map.html` generated from finished code, checked offline in the browser, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: [complete after final review]
-Route and stops: [actual code paths and symbols; focused route or reference-only route]
-Edit outcome: [offered and tried/kept/reverted/declined; verification if changed]
-Reflection: [offered/answered/declined/already covered; personal response belongs only in ignored profile]
-Activity mode: [live app, static fallback, focused alternative, prior practice, or recap]
+Activity and evidence: The learner spotted a live Gemini question mapped to the root topic rather than its specific tested concept, requested a targeted fix, and reviewed the rerun. The updated live result named `Artificial Neurons` and highlighted that map node. `npm run smoke:gemini`, `npm run test:validation`, and `npm run build` passed.
+Route and stops: Reference-only route — `src/components/QuizPanel.tsx > QuizQuestionView`, `src/App.tsx > answerQuestion`, `src/components/ConceptMap.tsx > MapCanvas`.
+Edit outcome: Not applicable to the focused alternative; no unrelated or kernel edit was needed.
+Reflection: Answered; personal response recorded only in the ignored learner profile.
+Activity mode: Focused alternative grounded in the live review and the learner's structured-output safety goal.
 
 ## Revisions
 
