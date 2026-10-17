@@ -6,6 +6,7 @@
     "dev": "concurrently -k -n web,api \"npm:dev:web\" \"npm:dev:api\"",
     "dev:web": "vite --host 127.0.0.1",
     "dev:api": "tsx watch server/src/index.ts",
+    "start": "tsx server/src/index.ts",
     "smoke:gemini": "tsx scripts/gemini-smoke-test.ts",
     "test:validation": "tsx --test server/src/services/validateResponse.test.ts",
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.server.json",

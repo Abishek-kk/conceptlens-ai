@@ -32,6 +32,23 @@ npm run dev
 
 Open <http://localhost:5173>.
 
+## Deploy to Render
+
+Deploy the frontend and API together as one **Web Service**:
+
+1. Push this repository to GitHub and create a new Web Service in Render from it.
+2. Use these settings:
+   - **Runtime:** Node
+   - **Build Command:** `npm install --include=dev && npm run build`
+   - **Start Command:** `npm start`
+3. In the service's **Environment** settings, add:
+   - `GEMINI_API_KEY` — your Google AI Studio API key
+   - `GEMINI_MODEL` — the model ID enabled for that key
+   - `USE_FIXTURE` — `false` (or leave unset)
+4. Deploy. Render will provide the public URL when the service is live.
+
+The build creates the Vite app in `dist`; in production, the Express server serves those files and the `/api` endpoints from the same origin. Render supplies the listening `PORT` automatically. Keep the Gemini key in Render's environment settings, not in a `VITE_` variable or committed file.
+
 ## Development fixture
 
 When Gemini quota is unavailable, set `USE_FIXTURE=true` in `server/.env` and restart the dev server. This serves a fixed, schema-validated “Neural Networks” lesson so the UI and wrong-answer-to-map flow can be explored without calling Gemini. Other topics show a clear message that the fixture only supports Neural Networks and that turning off `USE_FIXTURE` uses Gemini. The topic remains editable so you can change it and retry. The fixture is development-only, is refused when `NODE_ENV=production`, and is never used as a fallback after a Gemini failure.
